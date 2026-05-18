@@ -1,206 +1,408 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barbearia BW | Agendamento Online</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Controle Financeiro Mensal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        /* Seletor de Mês Ativo */
+        .filtro-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .filtro-container label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .filtro-container input[type="month"] {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card h2 { font-size: 24px; }
+        .receitas h2 { color: #2ecc71; }
+        .despesas h2 { color: #e74c3c; }
+        .saldo h2 { color: #3498db; }
+
+        /* Formulário */
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        input, select, button {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        select { flex: 1; min-width: 120px; }
+        input[type="text"] { flex: 2; min-width: 200px; }
+        input[type="number"] { flex: 1; min-width: 100px; }
+        input[type="date"] { flex: 1; min-width: 130px; }
+
+        .btn-adicionar {
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn-adicionar:hover { background: #219653; }
+
+        /* Ações extras (Exportar) */
+        .acoes-tabela {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .btn-exportar {
+            background: #2980b9;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .btn-exportar:hover { background: #2471a3; }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .btn-remover {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-remover:hover { background: #c0392b; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge.receita { background: #2ecc71; }
+        .badge.despesa { background: #e74c3c; }
+        
+        .sem-dados {
+            text-align: center;
+            color: #95a5a6;
+            padding: 30px;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
 
-<!-- TELA PRINCIPAL -->
-<div class="container">
-    <header>
-        <div class="header-eyebrow">Agendamento Online</div>
-        <h1>BARBEARIA BW</h1>
-        <p>Rua José Narciso Silva, 997 — Fábricas</p>
-    </header>
+    <div class="container">
+        <h1>📊 Controle Financeiro Mensal</h1>
 
-    <!-- Barra do usuário logado -->
-    <div class="user-bar" id="userBar" style="display:none">
-        <div class="user-bar-info">
-            <div class="user-bar-avatar" id="userBarAvatar">?</div>
-            <div>
-                <div class="user-bar-name" id="userBarName">Carregando...</div>
-                <div class="user-bar-sub">Cliente</div>
+        <div class="filtro-container">
+            <label for="mes-filtro">Mês de Referência:</label>
+            <input type="month" id="mes-filtro">
+        </div>
+
+        <div class="dashboard">
+            <div class="card receitas">
+                <h3>Recebido no Mês</h3>
+                <h2 id="total-receitas">R$ 0,00</h2>
+            </div>
+            <div class="card despesas">
+                <h3>Gasto no Mês</h3>
+                <h2 id="total-despesas">R$ 0,00</h2>
+            </div>
+            <div class="card saldo">
+                <h3>Saldo do Mês</h3>
+                <h2 id="saldo-atual">R$ 0,00</h2>
             </div>
         </div>
-        <div class="user-bar-actions">
-            <button class="user-bar-appts" id="btnMeusAgendamentos">📅</button>
-            <button class="user-bar-logout" id="btnLogout">Sair</button>
+
+        <form id="form-transacao" class="form-group">
+            <select id="tipo" required>
+                <option value="despesa">Despesa (Saída)</option>
+                <option value="receita">Receita (Entrada)</option>
+            </select>
+            <input type="text" id="descricao" placeholder="Descrição (ex: Aluguel, Mercado, Cigarro)" required>
+            <input type="number" id="valor" placeholder="Valor (R$)" step="0.01" required>
+            <input type="date" id="data-lancamento" required>
+            <button type="submit" class="btn-adicionar">Adicionar</button>
+        </form>
+
+        <div class="acoes-tabela">
+            <button class="btn-exportar" onclick="exportarParaExcel()">📥 Exportar Mês para Excel</button>
         </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="lista-transacoes">
+                </tbody>
+        </table>
     </div>
 
-    <main id="lista-servicos">
-        <!-- Serviços carregados dinamicamente do Supabase -->
-    </main>
-</div>
+    <script>
+        // Banco de dados simulado no navegador
+        let transacoes = JSON.parse(localStorage.getItem('transacoesMensaisRamon')) || [];
 
-<!-- ================================ -->
-<!-- MODAL AUTH (Login / Cadastro)    -->
-<!-- ================================ -->
-<div class="modal-overlay" id="modalAuth">
-    <div class="modal-content">
+        // Ao carregar a página, define o seletor para o mês/ano atual do seu computador
+        const hoje = new Date();
+        const anoAtual = hoje.getFullYear();
+        const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+        
+        const seletorMes = document.getElementById('mes-filtro');
+        seletorMes.value = `${anoAtual}-${mesAtual}`;
+        
+        // Define a data padrão do formulário para o dia de hoje
+        document.getElementById('data-lancamento').value = hoje.toISOString().split('T')[0];
 
-        <!-- Etapa 1: Escolha -->
-        <div id="authEtapa1">
-            <div class="modal-header">
-                <h2>Entrar</h2>
-                <span class="close-modal" id="closeModalAuth">&times;</span>
-            </div>
-            <p class="auth-subtitle">Para agendar, entre ou crie sua conta</p>
+        // Formatador de Moeda Brasileira
+        const formatarMoeda = (valor) => {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        };
 
-            <div class="auth-options">
-                <button class="auth-opt-btn" id="btnIrLogin">
-                    <span class="auth-opt-icon">👤</span>
-                    <div>
-                        <div class="auth-opt-title">Já tenho conta</div>
-                        <div class="auth-opt-sub">Entrar com e-mail e senha</div>
-                    </div>
-                    <span class="auth-opt-arrow">›</span>
-                </button>
-                <button class="auth-opt-btn" id="btnIrCadastro">
-                    <span class="auth-opt-icon">✨</span>
-                    <div>
-                        <div class="auth-opt-title">Criar conta</div>
-                        <div class="auth-opt-sub">Cadastro rápido e gratuito</div>
-                    </div>
-                    <span class="auth-opt-arrow">›</span>
-                </button>
-            </div>
-        </div>
+        // Formata a data de AAAA-MM-DD para DD/MM/AAAA
+        const formatarDataBR = (dataString) => {
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        };
 
-        <!-- Etapa 2a: Login -->
-        <div id="authEtapaLogin" style="display:none">
-            <div class="modal-header">
-                <button class="back-btn" id="btnVoltarLogin">‹</button>
-                <h2>Entrar</h2>
-                <span class="close-modal" id="closeModalAuth2">&times;</span>
-            </div>
-            <p class="auth-subtitle">Entre com sua conta Barbearia BW</p>
+        // Função principal que atualiza a tela baseada no mês selecionado
+        const atualizarInterface = () => {
+            const lista = document.getElementById('lista-transacoes');
+            lista.innerHTML = '';
 
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" id="loginEmail" placeholder="seu@email.com">
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="loginSenha" placeholder="••••••••">
-            </div>
-            <div id="loginErro" class="auth-erro" style="display:none"></div>
-            <button class="btn-confirm" id="btnLogin">Entrar</button>
-            <p class="auth-switch">Não tem conta? <span id="btnIrCadastro2">Criar agora</span></p>
-        </div>
+            const mesSelecionado = seletorMes.value; // Formato "AAAA-MM"
 
-        <!-- Etapa 2b: Cadastro -->
-        <div id="authEtapaCadastro" style="display:none">
-            <div class="modal-header">
-                <button class="back-btn" id="btnVoltarCadastro">‹</button>
-                <h2>Criar Conta</h2>
-                <span class="close-modal" id="closeModalAuth3">&times;</span>
-            </div>
-            <p class="auth-subtitle">Rápido e gratuito</p>
+            // Filtra apenas as transações que pertencem ao mês selecionado
+            const transacoesDoMes = transacoes.filter(t => t.data.startsWith(mesSelecionado));
 
-            <div class="input-group">
-                <label>Nome completo</label>
-                <input type="text" id="cadNome" placeholder="Seu nome">
-            </div>
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" id="cadEmail" placeholder="seu@email.com">
-            </div>
-            <div class="input-group">
-                <label>WhatsApp</label>
-                <input type="tel" id="cadTelefone" placeholder="(32) 9 9999-9999">
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres">
-            </div>
-            <div id="cadErro" class="auth-erro" style="display:none"></div>
-            <button class="btn-confirm" id="btnCadastrar">Criar Conta</button>
-            <p class="auth-switch">Já tem conta? <span id="btnIrLogin2">Entrar</span></p>
-        </div>
+            // Ordena as transações por data (mais recentes primeiro ou ordem cronológica)
+            transacoesDoMes.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-    </div>
-</div>
+            let totalReceitas = 0;
+            let totalDespesas = 0;
 
-<!-- ================================ -->
-<!-- MODAL AGENDAMENTO                -->
-<!-- ================================ -->
-<div class="modal-overlay" id="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Agendar</h2>
-            <span class="close-modal" id="closeModal">&times;</span>
-        </div>
+            if (transacoesDoMes.length === 0) {
+                lista.innerHTML = `<tr><td colspan="5" class="sem-dados">Nenhum lançamento encontrado para este mês.</td></tr>`;
+            } else {
+                transacoesDoMes.forEach((transacao) => {
+                    if (transacao.tipo === 'receita') {
+                        totalReceitas += transacao.valor;
+                    } else {
+                        totalDespesas += transacao.valor;
+                    }
 
-        <div class="summary-box">
-            <div><h3 id="resumo-servico">-</h3><p id="resumo-detalhes">-</p></div>
-        </div>
+                    const tr = document.createElement('tr');
+                    const tipoClasse = transacao.tipo === 'receita' ? 'badge receita' : 'badge despesa';
+                    const tipoTexto = transacao.tipo === 'receita' ? 'Receita' : 'Despesa';
 
-        <div class="calendar-wrapper">
-            <div class="month-label" id="monthLabel"></div>
-            <div id="calendar" class="calendar-grid"></div>
-        </div>
+                    tr.innerHTML = `
+                        <td>${formatarDataBR(transacao.data)}</td>
+                        <td><span class="${tipoClasse}">${tipoTexto}</span></td>
+                        <td>${transacao.descricao}</td>
+                        <td>${formatarMoeda(transacao.valor)}</td>
+                        <td><button class="btn-remover" onclick="removerTransacao('${transacao.id}')">Excluir</button></td>
+                    `;
+                    lista.appendChild(tr);
+                });
+            }
 
-        <div class="input-row">
-            <label class="label-p">Escolha o Barbeiro</label>
-            <div class="barber-carousel" id="barberPicker">
-                <!-- Barbeiros carregados dinamicamente do Supabase -->
-            </div>
-            <input type="hidden" id="selectProf" value="">
-        </div>
+            // Atualiza os painéis numéricos
+            const saldo = totalReceitas - totalDespesas;
+            document.getElementById('total-receitas').innerText = formatarMoeda(totalReceitas);
+            document.getElementById('total-despesas').innerText = formatarMoeda(totalDespesas);
+            document.getElementById('saldo-atual').innerText = formatarMoeda(saldo);
 
-        <div class="input-group">
-            <input type="text" id="userObs" placeholder="Adicionar Observações">
-        </div>
+            // Cor do saldo (Verde se positivo, Vermelho se negativo)
+            document.getElementById('saldo-atual').style.color = saldo < 0 ? '#e74c3c' : '#2ecc71';
 
-        <div id="secaoHorarios" style="display:none">
-            <div class="section-title">Horários Disponíveis</div>
-            <div id="timeGrid" class="time-grid"></div>
-        </div>
+            // Salva a lista global atualizada no LocalStorage
+            localStorage.setItem('transacoesMensaisRamon', JSON.stringify(transacoes));
+        };
 
-        <div id="area-confirmar" style="display:none; border-top:1px solid #2a2a2a; padding-top:20px;">
-            <button class="btn-confirm" id="btnFinalizar">Confirmar Agendamento</button>
-        </div>
-    </div>
-</div>
+        // Escuta a mudança de mês no seletor para recalcular tudo
+        seletorMes.addEventListener('change', atualizarInterface);
 
+        // Adicionar novo item
+        document.getElementById('form-transacao').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-<!-- ================================ -->
-<!-- TELA MEUS AGENDAMENTOS           -->
-<!-- ================================ -->
-<div class="tela-agendamentos" id="telaAgendamentos" style="display:none">
-    <div class="tela-header">
-        <button class="tela-back" id="btnFecharAgendamentos">‹</button>
-        <h2>Meus Agendamentos</h2>
-        <button class="tela-refresh" id="btnRefreshAgendamentos">↻</button>
-    </div>
+            const tipo = document.getElementById('tipo').value;
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const data = document.getElementById('data-lancamento').value;
 
-    <!-- Filtro Atuais/Passados -->
-    <div class="filtro-tabs">
-        <label class="filtro-tab active" id="tabAtuais">
-            <input type="radio" name="filtro" value="atuais" checked> Atuais
-        </label>
-        <label class="filtro-tab" id="tabPassados">
-            <input type="radio" name="filtro" value="passados"> Passados
-        </label>
-    </div>
+            // Cria um ID único para cada item para facilitar a exclusão segura
+            const id = Date.now().toString();
 
-    <!-- Lista -->
-    <div class="agendamentos-lista" id="agendamentosLista">
-        <div class="agendamentos-loading">Carregando...</div>
-    </div>
-</div>
+            transacoes.push({ id, tipo, descricao, valor, data });
 
-<!-- Modal detalhe do agendamento -->
-<div class="modal-overlay" id="modalDetalhe">
-    <div class="modal-content" id="modalDetalheContent"></div>
-</div>
+            // Limpa os campos de descrição e valor, mantém a data
+            document.getElementById('descricao').value = '';
+            document.getElementById('valor').value = '';
 
-<script src="script.js"></script>
+            // Força o seletor de mês a ir para o mês do item que você acabou de adicionar
+            const anoMesDoLancamento = data.substring(0, 7);
+            seletorMes.value = anoMesDoLancamento;
+
+            atualizarInterface();
+        });
+
+        // Remover item usando o ID único
+        const removerTransacao = (id) => {
+            if(confirm("Tem certeza que deseja excluir este lançamento?")) {
+                transacoes = transacoes.filter(t => t.id !== id);
+                atualizarInterface();
+            }
+        };
+
+        // Função mágica para exportar para o Excel (.csv)
+        const exportarParaExcel = () => {
+            const mesSelecionado = seletorMes.value;
+            const transacoesDoMes = transacoes.filter(t => t.data.startsWith(mesSelecionado));
+
+            if (transacoesDoMes.length === 0) {
+                alert("Não há dados para exportar neste mês!");
+                return;
+            }
+
+            // Monta o arquivo CSV. O '\uFEFF' serve para o Excel abrir com acentos corretos (UTF-8)
+            let conteudoCSV = '\uFEFF';
+            // Cabeçalho das colunas no Excel (usando ponto e vírgula que é o padrão do Excel em português)
+            conteudoCSV += 'Data;Tipo;Descrição;Valor (R$)\n';
+
+            transacoesDoMes.forEach(t => {
+                const dataFormatada = formatarDataBR(t.data);
+                const tipoTexto = t.tipo === 'receita' ? 'Receita' : 'Despesa';
+                // Converte o valor para o padrão com vírgula para o Excel entender como número
+                const valorFormatado = t.valor.toFixed(2).replace('.', ',');
+                
+                conteudoCSV += `${dataFormatada};${tipoTexto};${t.descricao};${valorFormatado}\n`;
+            });
+
+            // Cria o link de download invisível no navegador
+            const blob = new Blob([conteudoCSV], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Controle_Financeiro_${mesSelecionado}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Inicializa a aplicação
+        atualizarInterface();
+    </script>
 </body>
 </html>
