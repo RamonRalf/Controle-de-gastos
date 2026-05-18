@@ -2,8 +2,15 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Controle Financeiro Mensal</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
     <style>
         * {
             box-sizing: border-box;
@@ -15,14 +22,14 @@
         body {
             background-color: #f4f6f9;
             color: #333;
-            padding: 20px;
+            padding: 10px; /* Reduzido para celular */
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
             background: #fff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
@@ -30,7 +37,8 @@
         h1 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
 
         /* Seletor de Mês Ativo */
@@ -39,15 +47,11 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             background: #e9ecef;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
-        }
-
-        .filtro-container label {
-            font-weight: bold;
-            color: #495057;
+            flex-wrap: wrap;
         }
 
         .filtro-container input[type="month"] {
@@ -64,12 +68,12 @@
             display: flex;
             justify-content: space-between;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .card {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
             background: #fff;
@@ -78,14 +82,13 @@
         }
 
         .card h3 {
-            font-size: 14px;
+            font-size: 12px;
             color: #7f8c8d;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .card h2 { font-size: 24px; }
+        .card h2 { font-size: 20px; }
         .receitas h2 { color: #2ecc71; }
         .despesas h2 { color: #e74c3c; }
         .saldo h2 { color: #3498db; }
@@ -94,10 +97,10 @@
         .form-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             background: #f8f9fa;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #e9ecef;
         }
@@ -107,12 +110,17 @@
             border: 1px solid #ced4da;
             border-radius: 6px;
             font-size: 14px;
+            width: 100%;
         }
 
-        select { flex: 1; min-width: 120px; }
-        input[type="text"] { flex: 2; min-width: 200px; }
-        input[type="number"] { flex: 1; min-width: 100px; }
-        input[type="date"] { flex: 1; min-width: 130px; }
+        /* Controle de tamanho no Desktop */
+        @media (min-width: 600px) {
+            select { flex: 1; width: auto; }
+            input[type="text"] { flex: 2; width: auto; }
+            input[type="number"] { flex: 1; width: auto; }
+            input[type="date"] { flex: 1; width: auto; }
+            .btn-adicionar { flex: 1; width: auto; }
+        }
 
         .btn-adicionar {
             background: #27ae60;
@@ -121,12 +129,9 @@
             cursor: pointer;
             font-weight: bold;
             transition: background 0.2s;
-            flex: 1;
-            min-width: 120px;
         }
         .btn-adicionar:hover { background: #219653; }
 
-        /* Ações extras (Exportar) */
         .acoes-tabela {
             display: flex;
             justify-content: flex-end;
@@ -141,20 +146,30 @@
             font-weight: bold;
             padding: 10px 15px;
             border-radius: 6px;
-            transition: background 0.2s;
+            width: 100%;
         }
-        .btn-exportar:hover { background: #2471a3; }
 
-        /* Tabela */
+        @media (min-width: 600px) {
+            .btn-exportar { width: auto; }
+        }
+
+        /* Tabela Responsiva */
+        .tabela-wrapper {
+            width: 100%;
+            overflow-x: auto; /* Permite rolar a tabela no celular se for grande */
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 400px; /* Garante que a tabela não esmague os dados */
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 10px;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
         }
 
         th {
@@ -166,39 +181,43 @@
         .btn-remover {
             background: #e74c3c;
             color: white;
-            padding: 5px 10px;
+            padding: 5px 8px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
         }
-        .btn-remover:hover { background: #c0392b; }
 
         .badge {
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             color: white;
+            display: inline-block;
         }
         .badge.receita { background: #2ecc71; }
         .badge.despesa { background: #e74c3c; }
         
-        .sem-dados {
-            text-align: center;
-            color: #95a5a6;
-            padding: 30px;
-            font-style: italic;
+        /* === CORREÇÕES PARA CELULAR (Tirar rolagem lateral) === */
+        @media (max-width: 600px) {
+            .dashboard {
+                flex-direction: column; /* Coloca os cartões um embaixo do outro */
+                gap: 10px;
+            }
+            .form-group {
+                flex-direction: column; /* Inputs um embaixo do outro */
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>📊 Controle Financeiro Mensal</h1>
+        <h1>📊 Controle Financeiro</h1>
 
         <div class="filtro-container">
-            <label for="mes-filtro">Mês de Referência:</label>
+            <label for="mes-filtro">Mês:</label>
             <input type="month" id="mes-filtro">
         </div>
 
@@ -222,86 +241,75 @@
                 <option value="despesa">Despesa (Saída)</option>
                 <option value="receita">Receita (Entrada)</option>
             </select>
-            <input type="text" id="descricao" placeholder="Descrição (ex: Aluguel, Mercado, Cigarro)" required>
+            <input type="text" id="descricao" placeholder="Descrição (ex: Aluguel)" required>
             <input type="number" id="valor" placeholder="Valor (R$)" step="0.01" required>
             <input type="date" id="data-lancamento" required>
             <button type="submit" class="btn-adicionar">Adicionar</button>
         </form>
 
         <div class="acoes-tabela">
-            <button class="btn-exportar" onclick="exportarParaExcel()">📥 Exportar Mês para Excel</button>
+            <button class="btn-exportar" onclick="exportarParaExcel()">📥 Exportar para Excel</button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Tipo</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="lista-transacoes">
-                </tbody>
-        </table>
+        <div class="tabela-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-transacoes"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // Banco de dados simulado no navegador
-        let transacoes = JSON.parse(localStorage.getItem('transacoesMensaisRamon')) || [];
+        // Registrar o Service Worker para habilitar a instalação do App no celular
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(() => {
+                console.log('Service Worker Registrado!');
+            });
+        }
 
-        // Ao carregar a página, define o seletor para o mês/ano atual do seu computador
+        let transacoes = JSON.parse(localStorage.getItem('transacoesMensaisRamon')) || [];
         const hoje = new Date();
         const anoAtual = hoje.getFullYear();
         const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
         
         const seletorMes = document.getElementById('mes-filtro');
         seletorMes.value = `${anoAtual}-${mesAtual}`;
-        
-        // Define a data padrão do formulário para o dia de hoje
         document.getElementById('data-lancamento').value = hoje.toISOString().split('T')[0];
 
-        // Formatador de Moeda Brasileira
-        const formatarMoeda = (valor) => {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-        };
-
-        // Formata a data de AAAA-MM-DD para DD/MM/AAAA
+        const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
         const formatarDataBR = (dataString) => {
             const [ano, mes, dia] = dataString.split('-');
-            return `${dia}/${mes}/${ano}`;
+            return `${dia}/${mes}`; // No celular, mostrar só dia/mês economiza espaço
         };
 
-        // Função principal que atualiza a tela baseada no mês selecionado
         const atualizarInterface = () => {
             const lista = document.getElementById('lista-transacoes');
             lista.innerHTML = '';
 
-            const mesSelecionado = seletorMes.value; // Formato "AAAA-MM"
-
-            // Filtra apenas as transações que pertencem ao mês selecionado
+            const mesSelecionado = seletorMes.value;
             const transacoesDoMes = transacoes.filter(t => t.data.startsWith(mesSelecionado));
-
-            // Ordena as transações por data (mais recentes primeiro ou ordem cronológica)
             transacoesDoMes.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-            let totalReceitas = 0;
-            let totalDespesas = 0;
+            let totalReceitas = 0; let totalDespesas = 0;
 
             if (transacoesDoMes.length === 0) {
-                lista.innerHTML = `<tr><td colspan="5" class="sem-dados">Nenhum lançamento encontrado para este mês.</td></tr>`;
+                lista.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:20px;">Nenhum lançamento.</td></tr>`;
             } else {
                 transacoesDoMes.forEach((transacao) => {
-                    if (transacao.tipo === 'receita') {
-                        totalReceitas += transacao.valor;
-                    } else {
-                        totalDespesas += transacao.valor;
-                    }
+                    if (transacao.tipo === 'receita') totalReceitas += transacao.valor;
+                    else totalDespesas += transacao.valor;
 
                     const tr = document.createElement('tr');
                     const tipoClasse = transacao.tipo === 'receita' ? 'badge receita' : 'badge despesa';
-                    const tipoTexto = transacao.tipo === 'receita' ? 'Receita' : 'Despesa';
+                    const tipoTexto = transacao.tipo === 'receita' ? 'Rec' : 'Desp'; // Encurtado para celular
 
                     tr.innerHTML = `
                         <td>${formatarDataBR(transacao.data)}</td>
@@ -314,94 +322,59 @@
                 });
             }
 
-            // Atualiza os painéis numéricos
             const saldo = totalReceitas - totalDespesas;
             document.getElementById('total-receitas').innerText = formatarMoeda(totalReceitas);
             document.getElementById('total-despesas').innerText = formatarMoeda(totalDespesas);
             document.getElementById('saldo-atual').innerText = formatarMoeda(saldo);
-
-            // Cor do saldo (Verde se positivo, Vermelho se negativo)
             document.getElementById('saldo-atual').style.color = saldo < 0 ? '#e74c3c' : '#2ecc71';
 
-            // Salva a lista global atualizada no LocalStorage
             localStorage.setItem('transacoesMensaisRamon', JSON.stringify(transacoes));
         };
 
-        // Escuta a mudança de mês no seletor para recalcular tudo
         seletorMes.addEventListener('change', atualizarInterface);
 
-        // Adicionar novo item
         document.getElementById('form-transacao').addEventListener('submit', function(e) {
             e.preventDefault();
-
             const tipo = document.getElementById('tipo').value;
             const descricao = document.getElementById('descricao').value;
             const valor = parseFloat(document.getElementById('valor').value);
             const data = document.getElementById('data-lancamento').value;
-
-            // Cria um ID único para cada item para facilitar a exclusão segura
             const id = Date.now().toString();
 
             transacoes.push({ id, tipo, descricao, valor, data });
-
-            // Limpa os campos de descrição e valor, mantém a data
             document.getElementById('descricao').value = '';
             document.getElementById('valor').value = '';
-
-            // Força o seletor de mês a ir para o mês do item que você acabou de adicionar
-            const anoMesDoLancamento = data.substring(0, 7);
-            seletorMes.value = anoMesDoLancamento;
-
+            seletorMes.value = data.substring(0, 7);
             atualizarInterface();
         });
 
-        // Remover item usando o ID único
         const removerTransacao = (id) => {
-            if(confirm("Tem certeza que deseja excluir este lançamento?")) {
+            if(confirm("Excluir este lançamento?")) {
                 transacoes = transacoes.filter(t => t.id !== id);
                 atualizarInterface();
             }
         };
 
-        // Função mágica para exportar para o Excel (.csv)
         const exportarParaExcel = () => {
             const mesSelecionado = seletorMes.value;
             const transacoesDoMes = transacoes.filter(t => t.data.startsWith(mesSelecionado));
+            if (transacoesDoMes.length === 0) return alert("Não há dados!");
 
-            if (transacoesDoMes.length === 0) {
-                alert("Não há dados para exportar neste mês!");
-                return;
-            }
-
-            // Monta o arquivo CSV. O '\uFEFF' serve para o Excel abrir com acentos corretos (UTF-8)
-            let conteudoCSV = '\uFEFF';
-            // Cabeçalho das colunas no Excel (usando ponto e vírgula que é o padrão do Excel em português)
-            conteudoCSV += 'Data;Tipo;Descrição;Valor (R$)\n';
-
+            let conteudoCSV = '\uFEFFData;Tipo;Descrição;Valor (R$)\n';
             transacoesDoMes.forEach(t => {
-                const dataFormatada = formatarDataBR(t.data);
+                const dataFormatada = t.data.split('-').reverse().join('/');
                 const tipoTexto = t.tipo === 'receita' ? 'Receita' : 'Despesa';
-                // Converte o valor para o padrão com vírgula para o Excel entender como número
                 const valorFormatado = t.valor.toFixed(2).replace('.', ',');
-                
                 conteudoCSV += `${dataFormatada};${tipoTexto};${t.descricao};${valorFormatado}\n`;
             });
 
-            // Cria o link de download invisível no navegador
             const blob = new Blob([conteudoCSV], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Controle_Financeiro_${mesSelecionado}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Controle_${mesSelecionado}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
-        // Inicializa a aplicação
         atualizarInterface();
     </script>
 </body>
